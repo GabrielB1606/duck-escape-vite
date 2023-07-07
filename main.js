@@ -38,34 +38,41 @@ const InitDemo = () => {
     console.log("browser not compatible");
   }
 
+  // shader program
   const shaderProgram = initShaderProgram(gl, vertexShaderText, fragmentShaderText);
 
   // initialize attributes
   gl.useProgram(shaderProgram);
 
-  // position buffer
-  const positionBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+  // Collect all the info needed to use the shader program.
+  // Look up which attributes our shader program is using
+  // for aVertexPosition, aVertexColor and also
+  // look up uniform locations.
+  const programInfo = {
+    program: shaderProgram,
+    attribLocations: {
+      vertexPosition: gl.getAttribLocation(shaderProgram, "a_position"),
+      textureCoord: gl.getAttribLocation(shaderProgram, "a_texCoord"),
+    },
+    uniformLocations: {
+      modelMatrix: gl.getUniformLocation(shaderProgram, "u_model"),
+      viewMatrix: gl.getUniformLocation(shaderProgram, "u_view"),
+      projectionMatrix: gl.getUniformLocation(shaderProgram, "u_proj"),
+      texSampler: gl.getUniformLocation(shaderProgram, "u_texture"),
+    },
+  };
 
-  const positionAttributeLocation = gl.getAttribLocation(shaderProgram, "a_position");
-  gl.enableVertexAttribArray(positionAttributeLocation);
-  gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
+  // Here's where we call the routine that builds all the
+  // objects we'll be drawing.
+  const buffers = initBuffers(gl);
 
-  // texcoords
-  const texCoordBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+  gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+  gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition, 3, gl.FLOAT, false, 0, 0);
 
-  const texCoordAttributeLocation = gl.getAttribLocation(shaderProgram, 'a_texCoord');
-  gl.enableVertexAttribArray(texCoordAttributeLocation);
-  gl.vertexAttribPointer(texCoordAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-
-  // initialize uniforms
-  const u_model_loc = gl.getUniformLocation(shaderProgram, "u_model");
-  const u_view_loc = gl.getUniformLocation(shaderProgram, "u_view");
-  const u_proj_loc = gl.getUniformLocation(shaderProgram, "u_proj");
-  const u_texture_loc = gl.getUniformLocation(shaderProgram, 'u_texture');
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
+  gl.enableVertexAttribArray(programInfo.attribLocations.textureCoord);
+  gl.vertexAttribPointer(programInfo.attribLocations.textureCoord, 2, gl.FLOAT, false, 0, 0);
 
   // matrices
   let modelMatrix = new Float32Array(16);
@@ -79,9 +86,9 @@ const InitDemo = () => {
   mat4.perspective(projMatrix, glMatrix.toRadian(45), 4 / 3, 0.1, 100.0);
 
   // send uniforms
-  gl.uniformMatrix4fv(u_model_loc, gl.FALSE, modelMatrix);
-  gl.uniformMatrix4fv(u_view_loc, gl.FALSE, viewMatrix);
-  gl.uniformMatrix4fv(u_proj_loc, gl.FALSE, projMatrix);
+  gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, gl.FALSE, modelMatrix);
+  gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, gl.FALSE, viewMatrix);
+  gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, gl.FALSE, projMatrix);
 
   // textures
   const texture = gl.createTexture();
@@ -120,7 +127,7 @@ const InitDemo = () => {
   // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-  gl.uniform1i(u_texture_loc, 0);
+  gl.uniform1i(programInfo.uniformLocations.texSampler, 0);
 
   // Bind and activate the texture before rendering
   gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -195,6 +202,61 @@ function loadShader(gl, type, source) {
   }
 
   return shader;
+}
+
+//
+// Initialize a texture and load an image.
+// When the image finished loading copy it into the texture.
+//
+function loadTexture(gl, url) {
+  const texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+
+  // Because images have to be downloaded over the internet
+  // they might take a moment until they are ready.
+  // Until then put a single pixel in the texture so we can
+  // use it immediately. When the image has finished downloading
+  // we'll update the texture with the contents of the image.
+  const level = 0;
+  const internalFormat = gl.RGBA;
+  const width = 1;
+  const height = 1;
+  const border = 0;
+  const srcFormat = gl.RGBA;
+  const srcType = gl.UNSIGNED_BYTE;
+  const pixel = new Uint8Array([0, 0, 255, 255]); // opaque blue
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    level,
+    internalFormat,
+    width,
+    height,
+    border,
+    srcFormat,
+    srcType,
+    pixel
+  );
+
+  const image = new Image();
+  image.onload = () => {
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      level,
+      internalFormat,
+      srcFormat,
+      srcType,
+      image
+    );
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    
+  };
+  image.src = url;
+
+  return texture;
 }
 
 document.getElementById("app").onload = InitDemo();
