@@ -1,4 +1,4 @@
-import {mat4} from 'gl-matrix'
+import {glMatrix, mat4} from 'gl-matrix'
 
 const vertexShaderText = `
     attribute vec3 a_position;
@@ -8,7 +8,7 @@ const vertexShaderText = `
     uniform mat4 u_proj;
 
     void main() {
-        gl_Position = vec4(a_position, 1.0);
+        gl_Position = u_proj * u_view * u_model * vec4(a_position, 1.0);
     }
 `;
 
@@ -33,9 +33,6 @@ const InitDemo = () =>{
     if(!gl){
         console.log("browser not compatible");
     }
-
-    gl.clearColor(0.2, 0.6, 0.2, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     const vertexShader = gl.createShader(gl.VERTEX_SHADER);
     const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -76,10 +73,10 @@ const InitDemo = () =>{
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
     const vertices = [
-       -1.0,  1.0, 0.0,
-        1.0,  1.0, 0.0,
-       -1.0, -1.0, 0.0,
-        // 1.0, -1.0, 0.0,
+       -1.0,  1.0, -1.0,
+        1.0,  1.0, -1.0,
+       -1.0, -1.0, -1.0,
+        1.0, -1.0, -1.0,
     ];
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
@@ -100,15 +97,31 @@ const InitDemo = () =>{
     let projMatrix = new Float32Array(16);
 
     mat4.identity(modelMatrix);
+    mat4.scale(modelMatrix, modelMatrix, [0.2, 0.2, 1.0]);
     mat4.identity(viewMatrix);
     mat4.identity(projMatrix);
+    mat4.perspective(projMatrix, glMatrix.toRadian(45), 4/3, 0.1, 100.0);
 
     gl.uniformMatrix4fv(u_model_loc, gl.FALSE, modelMatrix);
     gl.uniformMatrix4fv(u_view_loc,  gl.FALSE, viewMatrix);
     gl.uniformMatrix4fv(u_proj_loc,  gl.FALSE, projMatrix);
 
-    gl.useProgram(shaderProgram);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length/3);
+    const gameLoop = () => {
+
+      gl.useProgram(shaderProgram);
+      
+      // mat4.translate(modelMatrix, modelMatrix, [ 0.001* performance.now()/1000, 0.0, 0.0]);
+      // gl.uniformMatrix4fv(u_model_loc, gl.FALSE, modelMatrix);
+      
+      gl.clearColor(0.2, 0.6, 0.2, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length/3);
+
+    }
+
+    setInterval(gameLoop, 1000/24);
+
 
 }
 
