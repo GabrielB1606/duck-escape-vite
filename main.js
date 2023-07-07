@@ -38,44 +38,7 @@ const InitDemo = () => {
     console.log("browser not compatible");
   }
 
-  // initialize shaders
-  const vertexShader = gl.createShader(gl.VERTEX_SHADER);
-  const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-
-  // get shader source
-  gl.shaderSource(vertexShader, vertexShaderText);
-  gl.shaderSource(fragmentShader, fragmentShaderText);
-
-  // compile shaders
-  gl.compileShader(vertexShader);
-  if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-    console.error('ERROR compiling vertex shader!', gl.getShaderInfoLog(vertexShader));
-    return;
-  }
-
-  gl.compileShader(fragmentShader);
-  if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-    console.error('ERROR compiling fragment shader!', gl.getShaderInfoLog(fragmentShader));
-    return;
-  }
-
-  // create shader program
-  const shaderProgram = gl.createProgram();
-  gl.attachShader(shaderProgram, vertexShader);
-  gl.attachShader(shaderProgram, fragmentShader);
-  gl.linkProgram(shaderProgram);
-
-  // validate shader program
-  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-    console.error('ERROR linking program!', gl.getProgramInfoLog(shaderProgram));
-    return;
-  }
-
-  gl.validateProgram(shaderProgram);
-  if (!gl.getProgramParameter(shaderProgram, gl.VALIDATE_STATUS)) {
-    console.error('ERROR validating program!', gl.getProgramInfoLog(shaderProgram));
-    return;
-  }
+  const shaderProgram = initShaderProgram(gl, vertexShaderText, fragmentShaderText);
 
   // initialize attributes
   gl.useProgram(shaderProgram);
@@ -207,6 +170,31 @@ function initShaderProgram(gl, vsSource, fsSource) {
   }
 
   return shaderProgram;
+}
+
+//
+// creates a shader of the given type, uploads the source and
+// compiles it.
+//
+function loadShader(gl, type, source) {
+  const shader = gl.createShader(type);
+
+  // Send the source to the shader object
+  gl.shaderSource(shader, source);
+
+  // Compile the shader program
+  gl.compileShader(shader);
+
+  // See if it compiled successfully
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    alert(
+      `An error occurred compiling the shaders: ${gl.getShaderInfoLog(shader)}`
+    );
+    gl.deleteShader(shader);
+    return null;
+  }
+
+  return shader;
 }
 
 document.getElementById("app").onload = InitDemo();
