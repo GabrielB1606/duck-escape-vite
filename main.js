@@ -38,6 +38,10 @@ const InitDemo = () => {
     console.log("browser not compatible");
   }
 
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+
   // shader program
   const shaderProgram = initShaderProgram(gl, vertexShaderText, fragmentShaderText);
 
@@ -80,7 +84,7 @@ const InitDemo = () => {
   let projMatrix = new Float32Array(16);
 
   mat4.identity(modelMatrix);
-  mat4.scale(modelMatrix, modelMatrix, [0.2, 0.2, 1.0]);
+  mat4.scale(modelMatrix, modelMatrix, [0.4, 0.4, 1.0]);
   mat4.identity(viewMatrix);
   mat4.identity(projMatrix);
   mat4.perspective(projMatrix, glMatrix.toRadian(45), 4 / 3, 0.1, 100.0);
@@ -89,45 +93,11 @@ const InitDemo = () => {
   gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, gl.FALSE, modelMatrix);
   gl.uniformMatrix4fv(programInfo.uniformLocations.viewMatrix, gl.FALSE, viewMatrix);
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, gl.FALSE, projMatrix);
+  gl.uniform1i(programInfo.uniformLocations.texSampler, 0);
 
   // textures
-  const texture = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.texImage2D(
-    gl.TEXTURE_2D,
-    0,
-    gl.RGBA,
-    1,
-    1,
-    0,
-    gl.RGBA,
-    gl.UNSIGNED_BYTE,
-    new Uint8Array([0, 0, 255, 255])
-  );
+  const texture = loadTexture(gl, './img/characters.png');
 
-  const image = new Image();
-  image.onload = function() {
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      image
-    );
-
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  
-  };
-  
-  image.src = './img/characters.png';
-  // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-  gl.uniform1i(programInfo.uniformLocations.texSampler, 0);
 
   // Bind and activate the texture before rendering
   gl.bindTexture(gl.TEXTURE_2D, texture);
