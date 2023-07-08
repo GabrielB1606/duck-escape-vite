@@ -1,7 +1,14 @@
 import { mat4 } from "gl-matrix";
 
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
 export class Crosshair{
     constructor(){
+
+        this.speed = 4;
+
         const spriteW = 375.0;
         const spriteH = 267.0;
 
@@ -15,6 +22,9 @@ export class Crosshair{
         this.position = [0, 240, 0];
         this.velocity = [5, 0];
 
+        this.currentTimer = 0.0;
+        this.frameTime = 250.0;
+
         this.modelMatrix = new Float32Array(16);
         mat4.identity(this.modelMatrix);
         mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
@@ -25,7 +35,19 @@ export class Crosshair{
         return [this.initialX, this.initialY];
     }
 
-    update(delta_time){
+    update(delta_time, target){
+
+        if(this.currentTimer >= this.frameTime){
+            // this.currentCycle = (this.currentCycle+1)%4;
+            this.velocity = [ 
+                clamp( target[0] - this.position[0], -this.speed, this.speed),
+                clamp( target[1] - this.position[1], -this.speed, this.speed)
+            ];
+
+            this.currentTimer = 0.0;
+        }else{
+            this.currentTimer += delta_time;
+        }
 
         this.position[0]+=this.velocity[0];
         this.position[1]+=this.velocity[1];
