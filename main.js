@@ -48,10 +48,7 @@ const InitDemo = () => {
   // initialize attributes
   gl.useProgram(shaderProgram);
 
-  // Collect all the info needed to use the shader program.
-  // Look up which attributes our shader program is using
-  // for aVertexPosition, aVertexColor and also
-  // look up uniform locations.
+  // collect all the info needed to use the shader program.
   const programInfo = {
     program: shaderProgram,
     attribLocations: {
@@ -66,10 +63,10 @@ const InitDemo = () => {
     },
   };
 
-  // Here's where we call the routine that builds all the
-  // objects we'll be drawing.
+  // initialize all the buffers
   const buffers = initBuffers(gl);
 
+  // enable all the buffers
   gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
   gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
   gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition, 3, gl.FLOAT, false, 0, 0);
@@ -84,7 +81,7 @@ const InitDemo = () => {
   let projMatrix = new Float32Array(16);
 
   mat4.identity(modelMatrix);
-  mat4.scale(modelMatrix, modelMatrix, [0.4, 0.4, 1.0]);
+  mat4.scale(modelMatrix, modelMatrix, [0.2, 0.2, 1.0]);
   mat4.identity(viewMatrix);
   mat4.identity(projMatrix);
   mat4.perspective(projMatrix, glMatrix.toRadian(45), 4 / 3, 0.1, 100.0);
@@ -182,11 +179,6 @@ function loadTexture(gl, url) {
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
-  // Because images have to be downloaded over the internet
-  // they might take a moment until they are ready.
-  // Until then put a single pixel in the texture so we can
-  // use it immediately. When the image has finished downloading
-  // we'll update the texture with the contents of the image.
   const level = 0;
   const internalFormat = gl.RGBA;
   const width = 1;
@@ -221,7 +213,8 @@ function loadTexture(gl, url) {
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     
   };
   image.src = url;
