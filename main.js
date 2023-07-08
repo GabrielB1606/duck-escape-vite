@@ -1,5 +1,7 @@
 import { glMatrix, mat4 } from 'gl-matrix'
 
+import { Duck } from './src/Duck.js';
+
 import { initBuffers } from './src/InitBuffers.js';
 
 import vertexShaderText from './shaders/vertex.glsl'
@@ -45,6 +47,8 @@ const InitDemo = () => {
       modelMatrix: gl.getUniformLocation(shaderProgram, "u_model"),
       viewMatrix: gl.getUniformLocation(shaderProgram, "u_view"),
       projectionMatrix: gl.getUniformLocation(shaderProgram, "u_proj"),
+      texOffset: gl.getUniformLocation(shaderProgram, "u_texOffset"),
+      texSize: gl.getUniformLocation(shaderProgram, "u_texSize"),
       texSampler: gl.getUniformLocation(shaderProgram, "u_texture"),
     },
   };
@@ -87,9 +91,14 @@ const InitDemo = () => {
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.activeTexture(gl.TEXTURE0);
 
+  let d = new Duck(0);
+
   const gameLoop = () => {
 
     gl.useProgram(shaderProgram);
+
+    d.update(DELTA_TIME);
+    d.sendUniforms( gl, programInfo.uniformLocations.texOffset, programInfo.uniformLocations.texSize, programInfo.uniformLocations.modelMatrix );
 
     // mat4.translate(modelMatrix, modelMatrix, [ 0.001* performance.now()/1000, 0.0, 0.0]);
     // gl.uniformMatrix4fv(u_model_loc, gl.FALSE, modelMatrix);
