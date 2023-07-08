@@ -6,6 +6,7 @@ import { initBuffers } from './src/InitBuffers.js';
 
 import vertexShaderText from './shaders/vertex.glsl'
 import fragmentShaderText from './shaders/fragment.glsl'
+import { Crosshair } from './src/Crosshair.js';
 
 const DELTA_TIME = 1000 / 24;
 const canvas = document.getElementById("game");
@@ -92,30 +93,36 @@ const InitDemo = () => {
   gl.uniform1i(programInfo.uniformLocations.texSampler, 0);
 
   // textures
-  const texture = loadTexture(gl, './img/characters.png');
-
-
-  // Bind and activate the texture before rendering
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.activeTexture(gl.TEXTURE0);
+  const characterTex = loadTexture(gl, './img/characters.png');
+  const propTex = loadTexture(gl, './img/props.png');
 
   let player = new Duck(1);
+  let crosshair = new Crosshair();
 
   const gameLoop = () => {
 
     gl.useProgram(shaderProgram);
 
-    player.update(DELTA_TIME, inputMap);
-    player.sendUniforms( gl, programInfo.uniformLocations.texOffset, programInfo.uniformLocations.texSize, programInfo.uniformLocations.modelMatrix, programInfo.uniformLocations.xflip );
-
-    // mat4.translate(modelMatrix, modelMatrix, [ 0.001* performance.now()/1000, 0.0, 0.0]);
-    // gl.uniformMatrix4fv(u_model_loc, gl.FALSE, modelMatrix);
-
     gl.clearColor(0.22, 0.74, 1, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+    
+  
+    // Bind and activate the texture before rendering
+    gl.bindTexture(gl.TEXTURE_2D, characterTex);
+    gl.activeTexture(gl.TEXTURE0);
+    
+    player.update(DELTA_TIME, inputMap);
+    player.sendUniforms( gl, programInfo );
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  
+    
+    // Bind and activate the texture before rendering
+    gl.bindTexture(gl.TEXTURE_2D, propTex);
+    gl.activeTexture(gl.TEXTURE0);
 
+    crosshair.update(DELTA_TIME);
+    crosshair.sendUniforms(gl, programInfo);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
   const handleKeyDown = (e) => {

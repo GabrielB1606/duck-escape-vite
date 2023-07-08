@@ -108,11 +108,10 @@ export class Duck{
         this.position[1] += y;
     }
 
-    sendUniforms(gl, u_offset_loc, u_size_loc, u_model_loc, u_xflip_loc){
-
-        gl.uniform2fv(u_offset_loc, this.getCurrentTex());
-        gl.uniform2fv(u_size_loc, this.texSize);
-        gl.uniformMatrix4fv(u_model_loc, gl.FALSE, this.modelMatrix);
-        gl.uniform1f(u_xflip_loc, this.velocity[0]>0?1.0:-1.0); 
+    sendUniforms(gl, programInfo){
+        gl.uniform2fv(programInfo.uniformLocations.texOffset, this.getCurrentTex());
+        gl.uniform2fv(programInfo.uniformLocations.texSize, this.texSize);
+        gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, gl.FALSE, this.modelMatrix);
+        gl.uniform1f(programInfo.uniformLocations.xflip, this.velocity[0]>0?1.0:-1.0); 
     }
 }
