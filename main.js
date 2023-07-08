@@ -50,6 +50,7 @@ const InitDemo = () => {
       texOffset: gl.getUniformLocation(shaderProgram, "u_texOffset"),
       texSize: gl.getUniformLocation(shaderProgram, "u_texSize"),
       texSampler: gl.getUniformLocation(shaderProgram, "u_texture"),
+      xflip: gl.getUniformLocation(shaderProgram, "u_xflip"),
     },
   };
 
@@ -74,7 +75,7 @@ const InitDemo = () => {
   mat4.scale(modelMatrix, modelMatrix, [1, 1, 1.0]);
   mat4.identity(viewMatrix);
   mat4.identity(projMatrix);
-  mat4.ortho(projMatrix, -1.0, 1.0, -0.75, 0.75, 0.1, 100.0);
+  mat4.ortho(projMatrix, 0, 640, 0, 480, 0.1, 100.0);
   // mat4.perspective(projMatrix, glMatrix.toRadian(45), 4 / 3, 0.1, 100.0);
 
   // send uniforms
@@ -98,7 +99,7 @@ const InitDemo = () => {
     gl.useProgram(shaderProgram);
 
     d.update(DELTA_TIME);
-    d.sendUniforms( gl, programInfo.uniformLocations.texOffset, programInfo.uniformLocations.texSize, programInfo.uniformLocations.modelMatrix );
+    d.sendUniforms( gl, programInfo.uniformLocations.texOffset, programInfo.uniformLocations.texSize, programInfo.uniformLocations.modelMatrix, programInfo.uniformLocations.xflip );
 
     // mat4.translate(modelMatrix, modelMatrix, [ 0.001* performance.now()/1000, 0.0, 0.0]);
     // gl.uniformMatrix4fv(u_model_loc, gl.FALSE, modelMatrix);

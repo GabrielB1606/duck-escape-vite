@@ -20,9 +20,13 @@ export class Duck{
         this.currentTimer = 0.0;
         this.frameTime = 125.0;
 
+        this.position = [0, 240, 0];
+        this.velocity = [5, 0];
+
         this.modelMatrix = new Float32Array(16);
         mat4.identity(this.modelMatrix);
-        mat4.scale(this.modelMatrix, this.modelMatrix, [0.125, 0.125, 1]);
+        mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
+        mat4.scale(this.modelMatrix, this.modelMatrix, [40, 40, 1]);
 
         // v_texCoord = vec2((a_texCoord.x/375.0)*40.0, (112.0/267.0)+(a_texCoord.y/267.0)*40.0);
 
@@ -48,11 +52,24 @@ export class Duck{
             this.currentTimer += delta_time;
         }
 
+        this.position[0]+=this.velocity[0];
+        this.position[1]+=this.velocity[1];
+
+        if((this.position[0]>640 && this.velocity[0]>0 ) || (this.position[0]<0 && this.velocity[0]<0 ) )
+            this.velocity[0] *= -1;
+
+
+        mat4.identity(this.modelMatrix);
+        mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
+        mat4.scale(this.modelMatrix, this.modelMatrix, [40, 40, 1]);
+
     }
 
-    sendUniforms(gl, u_offset_loc, u_size_loc, u_model_loc){
+    sendUniforms(gl, u_offset_loc, u_size_loc, u_model_loc, u_xflip_loc){
+
         gl.uniform2fv(u_offset_loc, this.getCurrentTex());
         gl.uniform2fv(u_size_loc, this.texSize);
         gl.uniformMatrix4fv(u_model_loc, gl.FALSE, this.modelMatrix);
+        gl.uniform1f(u_xflip_loc, this.velocity[0]>0?1.0:-1.0);
     }
 }
