@@ -13,6 +13,13 @@ const canvas = document.getElementById("game");
 const PX_WIDTH = 1 / 640;
 const PX_HEIGHT = 1 / 480;
 
+const inputMap = {
+  up: false,
+  down: false,
+  left: false,
+  right: false
+};
+
 const InitDemo = () => {
 
   // get openGL context
@@ -92,14 +99,14 @@ const InitDemo = () => {
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.activeTexture(gl.TEXTURE0);
 
-  let d = new Duck(0);
+  let player = new Duck(1);
 
   const gameLoop = () => {
 
     gl.useProgram(shaderProgram);
 
-    d.update(DELTA_TIME);
-    d.sendUniforms( gl, programInfo.uniformLocations.texOffset, programInfo.uniformLocations.texSize, programInfo.uniformLocations.modelMatrix, programInfo.uniformLocations.xflip );
+    player.update(DELTA_TIME, inputMap);
+    player.sendUniforms( gl, programInfo.uniformLocations.texOffset, programInfo.uniformLocations.texSize, programInfo.uniformLocations.modelMatrix, programInfo.uniformLocations.xflip );
 
     // mat4.translate(modelMatrix, modelMatrix, [ 0.001* performance.now()/1000, 0.0, 0.0]);
     // gl.uniformMatrix4fv(u_model_loc, gl.FALSE, modelMatrix);
@@ -111,7 +118,46 @@ const InitDemo = () => {
 
   }
 
+  const handleKeyDown = (e) => {
+    // Access the key code of the pressed key
+    const keyCode = e.keyCode || e.which;
+
+    if(keyCode == 65 || keyCode == 37)
+      inputMap.left = true;
+    
+    if(keyCode == 68 || keyCode == 39)
+      inputMap.right = true;
+    
+    if(keyCode == 38 || keyCode == 87)
+      inputMap.up = true;
+    
+    if(keyCode == 83 || keyCode == 40)
+      inputMap.down = true;
+
+  }
+
+  const handleKeyUp = (e) => {
+    // Access the key code of the pressed key
+    const keyCode = e.keyCode || e.which;
+
+    if(keyCode == 65 || keyCode == 37)
+      inputMap.left = false;
+    
+    if(keyCode == 68 || keyCode == 39)
+      inputMap.right = false;
+    
+    if(keyCode == 38 || keyCode == 87)
+      inputMap.up = false;
+    
+    if(keyCode == 83 || keyCode == 40)
+      inputMap.down = false;
+
+  }
+
   setInterval(gameLoop, DELTA_TIME);
+  // Add event listener for keydown event
+  document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener('keyup', handleKeyUp);
 
 }
 
