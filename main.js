@@ -120,7 +120,7 @@ const InitDemo = () => {
     gl.bindTexture(gl.TEXTURE_2D, propTex);
     gl.activeTexture(gl.TEXTURE0);
 
-    crosshair.update(DELTA_TIME, player.position);
+    crosshair.update(DELTA_TIME, player);
     crosshair.sendUniforms(gl, programInfo);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }

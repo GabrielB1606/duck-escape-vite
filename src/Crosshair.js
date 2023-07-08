@@ -25,6 +25,9 @@ export class Crosshair{
         this.currentTimer = 0.0;
         this.frameTime = 250.0;
 
+        this.currentFireTimer = 0.0;
+        this.fireTimer = 500.0;
+
         this.modelMatrix = new Float32Array(16);
         mat4.identity(this.modelMatrix);
         mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
@@ -40,13 +43,25 @@ export class Crosshair{
         if(this.currentTimer >= this.frameTime){
             // this.currentCycle = (this.currentCycle+1)%4;
             this.velocity = [ 
-                clamp( target[0] - this.position[0], -this.speed, this.speed),
-                clamp( target[1] - this.position[1], -this.speed, this.speed)
+                clamp( target.position[0] - this.position[0], -this.speed, this.speed),
+                clamp( target.position[1] - this.position[1], -this.speed, this.speed)
             ];
 
             this.currentTimer = 0.0;
         }else{
             this.currentTimer += delta_time;
+        }
+
+        if(this.currentFireTimer >= this.fireTimer){
+
+            if( this.fire(target) )
+                console.log("HIT");
+            else
+                console.log("MISS");
+
+            this.currentFireTimer = 0.0;
+        }else{
+            this.currentFireTimer += delta_time;
         }
 
         this.position[0]+=this.velocity[0];
@@ -59,6 +74,14 @@ export class Crosshair{
         mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
         mat4.scale(this.modelMatrix, this.modelMatrix, [25, 25, 1]);
 
+    }
+
+    fire(target){
+        return (
+            Math.abs( this.position[0] - target.position[0] ) < target.getSize()[0]
+            &&
+            Math.abs( this.position[1] - target.position[1] ) < target.getSize()[1]
+        );
     }
 
     move(x, y){

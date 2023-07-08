@@ -108,6 +108,14 @@ export class Duck{
         this.position[1] += y;
     }
 
+    getSize(){
+        return [this.texW, this.texH];
+    }
+
+    getPosition(){
+        return this.position;
+    }
+
     sendUniforms(gl, programInfo){
         gl.uniform2fv(programInfo.uniformLocations.texOffset, this.getCurrentTex());
         gl.uniform2fv(programInfo.uniformLocations.texSize, this.texSize);
