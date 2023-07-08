@@ -11,20 +11,6 @@ const canvas = document.getElementById("game");
 const PX_WIDTH = 1 / 640;
 const PX_HEIGHT = 1 / 480;
 
-const vertices = [
-  -1.0, 1.0, -1.0,
-  1.0, 1.0, -1.0,
-  -1.0, -1.0, -1.0,
-  1.0, -1.0, -1.0,
-];
-
-const texCoords = [
-  0.0, 0.0,
-  1.0, 0.0,
-  0.0, 1.0,
-  1.0, 1.0,
-];
-
 const InitDemo = () => {
 
   // get openGL context
@@ -81,10 +67,11 @@ const InitDemo = () => {
   let projMatrix = new Float32Array(16);
 
   mat4.identity(modelMatrix);
-  mat4.scale(modelMatrix, modelMatrix, [0.2, 0.2, 1.0]);
+  mat4.scale(modelMatrix, modelMatrix, [1, 1, 1.0]);
   mat4.identity(viewMatrix);
   mat4.identity(projMatrix);
-  mat4.perspective(projMatrix, glMatrix.toRadian(45), 4 / 3, 0.1, 100.0);
+  mat4.ortho(projMatrix, -1.0, 1.0, -0.75, 0.75, 0.1, 100.0);
+  // mat4.perspective(projMatrix, glMatrix.toRadian(45), 4 / 3, 0.1, 100.0);
 
   // send uniforms
   gl.uniformMatrix4fv(programInfo.uniformLocations.modelMatrix, gl.FALSE, modelMatrix);
@@ -110,7 +97,7 @@ const InitDemo = () => {
     gl.clearColor(0.22, 0.74, 1, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertices.length / 3);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
   }
 
